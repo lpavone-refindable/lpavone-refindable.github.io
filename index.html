@@ -105,14 +105,14 @@
     }
 
     // 🔧 Your custom function
-    function onDateRangeChange(from, to) {
+    async function onDateRangeChange(from, to) {
         console.log("Custom handler: Date changed", { from, to });
         const fromDate = new Date(from);
         const toDate = new Date(to);
         if (isNaN(fromDate) || isNaN(toDate)) {
             scoreEl.textContent = "...";
         } else {
-            const score = calculateNPSScore(from, to);
+            const score = await calculateNPSScore(from, to);
             scoreEl.textContent = score;
             // Add red or green class based on score
             if (score < 70) {
@@ -128,15 +128,7 @@
     async function calculateNPSScore(from, to){
         const url = `https://nps-score-app-49cd6fba6a7c.herokuapp.com/survey/${surveyId}/custom-field/${customFieldId}/nps?startAt=${from}&endAt=${to}&apiKeyAlias=${apiKeyAlias}`;
 
-        const response = await fetch(url)
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error('HTTP error ' + response.status);
-                }
-              })
-              .catch(error => {
-                console.error('Fetch error:', error);
-              });
+        const response = await fetch(url);
         return await response.json();
     }
   </script>
