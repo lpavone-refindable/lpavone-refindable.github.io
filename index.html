@@ -18,24 +18,82 @@
       margin-top: 20px;
       font-size: 18px;
     }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #result {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 30px 40px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+    }
+
+    #result::before {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    #result-text {
+      font-size: 2.2rem;
+      color: #374151;
+      margin-bottom: 10px;
+    }
+
+    #npsScore {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .green {
+      color: #10b981; /* Tailwind green-500 */
+    }
+
+    .red {
+      color: #ef4444; /* Tailwind red-500 */
+    }
+
   </style>
 </head>
 <body>
 
-  <label for="fromDate">From:</label>
-  <input type="date" id="fromDate">
 
-  <label for="toDate">To:</label>
-  <input type="date" id="toDate">
 
   <div id="result">
-    NPS score: <span id="npsScore">0</span>
+    <label for="fromDate">From:</label>
+    <input type="date" id="fromDate">
+
+    <label for="toDate">To:</label>
+    <input type="date" id="toDate">
+    <div id="result-text">
+      NPS Score: <span id="npsScore" class="green">0</span>
+    </div>
   </div>
 
   <script>
     const fromInput = document.getElementById('fromDate');
     const toInput = document.getElementById('toDate');
-    const resultSpan = document.getElementById('npsScore');
+    const scoreEl = document.getElementById('npsScore');
+
+    const params = new URLSearchParams(window.location.search);
+
+    const surveyId = params.get('surveyId');
+    const customFieldId = params.get('customFieldId');
+    const apiKeyAlias = params.get('apiKeyAlias');
+
+    console.log(surveyId, customFieldId, apiKeyAlias);
 
     fromInput.addEventListener('change', handleDateChange);
     toInput.addEventListener('change', handleDateChange);
@@ -48,18 +106,41 @@
 
     // 🔧 Your custom function
     function onDateRangeChange(from, to) {
-      console.log("Custom handler: Date changed", { from, to });
-
-      const days = calculateNPSScore(from, to);
-      resultSpan.textContent = days;
+        console.log("Custom handler: Date changed", { from, to });
+        const fromDate = new Date(from);
+        const toDate = new Date(to);
+        if (isNaN(fromDate) || isNaN(toDate)) {
+            scoreEl.textContent = "...";
+        } else {
+            const score = calculateNPSScore(from, to);
+            scoreEl.textContent = score;
+            // Add red or green class based on score
+            if (score < 70) {
+              scoreEl.classList.remove('green');
+              scoreEl.classList.add('red');
+            } else {
+              scoreEl.classList.remove('red');
+              scoreEl.classList.add('green');
+            }
+        }
     }
 
-    function calculateNPSScore(from, to) {
-      const fromDate = new Date(from);
-      const toDate = new Date(to);
-      if (isNaN(fromDate) || isNaN(toDate)) return "Calculating...";
-      const diff = Math.abs(toDate - fromDate);
-      return Math.ceil(diff / (1000 * 60 * 60 * 24));
+    function calculateNPSScore(from, to){
+        const url = `https://nps-score-app-49cd6fba6a7c.herokuapp.com/survey/${surveyId}/custom-field/${customFieldId}/nps?startAt=${from}&endAt=${to}&apiKeyAlias=${apiKeyAlias}`;
+
+        fetch(url)
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error('HTTP error ' + response.status);
+                }
+                return response.json(); // parse JSON
+              })
+              .then(data => {
+                console.log('Success:', data);
+              })
+              .catch(error => {
+                console.error('Fetch error:', error);
+              });
     }
   </script>
 
