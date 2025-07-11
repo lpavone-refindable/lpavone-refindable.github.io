@@ -125,22 +125,21 @@
         }
     }
 
-    function calculateNPSScore(from, to){
+    async function calculateNPSScore(from, to){
         const url = `https://nps-score-app-49cd6fba6a7c.herokuapp.com/survey/${surveyId}/custom-field/${customFieldId}/nps?startAt=${from}&endAt=${to}&apiKeyAlias=${apiKeyAlias}`;
 
-        fetch(url)
+        const response = await fetch(url)
               .then(response => {
                 if (!response.ok) {
                   throw new Error('HTTP error ' + response.status);
                 }
+                console.log('Response:', response.json());
                 return response.json(); // parse JSON
-              })
-              .then(data => {
-                console.log('Success:', data);
               })
               .catch(error => {
                 console.error('Fetch error:', error);
               });
+        return await response.json();
     }
   </script>
 
