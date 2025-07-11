@@ -133,8 +133,6 @@
                 if (!response.ok) {
                   throw new Error('HTTP error ' + response.status);
                 }
-                console.log('Response:', response.json());
-                return response.json(); // parse JSON
               })
               .catch(error => {
                 console.error('Fetch error:', error);
